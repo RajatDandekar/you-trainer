@@ -90,6 +90,17 @@ def handler(event: dict) -> dict:
     tokenizer = AutoTokenizer.from_pretrained(base_model, token=hf_token)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    # Fallback chat template for base models that don't ship one (e.g. tiny-gpt2)
+    if not getattr(tokenizer, "chat_template", None):
+        tokenizer.chat_template = (
+            "{% for m in messages %}"
+            "{% if m['role'] == 'user' %}USER: {{ m['content'] }}\n"
+            "{% elif m['role'] == 'assistant' %}ASSISTANT: {{ m['content'] }}\n"
+            "{% else %}{{ m['content'] }}\n{% endif %}"
+            "{% endfor %}"
+            "{% if add_generation_prompt %}ASSISTANT: {% endif %}"
+        )
+        print("[you] applied fallback chat template", flush=True)
     model = AutoModelForCausalLM.from_pretrained(
         base_model,
         torch_dtype=torch.bfloat16,
