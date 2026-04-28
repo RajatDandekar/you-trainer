@@ -98,11 +98,12 @@ def handler(event: dict) -> dict:
         use_safetensors=None,  # auto: prefer safetensors when available
     )
 
-    # Wrap with LoRA
+    # Wrap with LoRA — "all-linear" auto-discovers projections across any arch
+    # (Llama, Mistral, Qwen, GPT-2, etc.) so the same handler works for everything.
     lora_config = LoraConfig(
         r=lora_rank,
         lora_alpha=lora_rank * 2,
-        target_modules=["q_proj", "v_proj", "k_proj", "o_proj"],
+        target_modules="all-linear",
         lora_dropout=0.05,
         bias="none",
         task_type="CAUSAL_LM",
