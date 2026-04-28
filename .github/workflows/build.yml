@@ -49,3 +49,14 @@ jobs:
         run: |
           echo "::notice title=Image ready::${{ steps.meta.outputs.image_url }}"
           echo "Final image: ${{ steps.meta.outputs.image_url }}"
+
+      - name: Make GHCR package public (best-effort)
+        continue-on-error: true
+        run: |
+          OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_LC=$(basename "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          curl -s -X PATCH \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/user/packages/container/${REPO_LC}" \
+            -d '{"visibility":"public"}' | head -50 || true
