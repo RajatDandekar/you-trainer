@@ -95,6 +95,7 @@ def handler(event: dict) -> dict:
         torch_dtype=torch.bfloat16,
         device_map="auto",
         token=hf_token,
+        use_safetensors=None,  # auto: prefer safetensors when available
     )
 
     # Wrap with LoRA
